@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 @Service
@@ -18,12 +20,23 @@ public class JwtUtils {
     // ESTA CLAVE DEBE SER SECRETA Y LARGA (Mínimo 64 caracteres)
     private static final String SECRET_KEY = "J9hbvmjdcgm6cGLkU3zFhD1zRFtln31ZqIs/Cqrpusk=";
 
-    // 1. Generar el Token
     public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+
+        // Extrae el rol desde las authorities del usuario
+        String rol = userDetails.getAuthorities()
+                .stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse("RESIDENTE");
+
+        claims.put("rol", rol); // ← lo mete dentro del JWT
+
         return Jwts.builder()
+                .setClaims(claims)                                        // ← agrega claims
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // Expira en 24 horas
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

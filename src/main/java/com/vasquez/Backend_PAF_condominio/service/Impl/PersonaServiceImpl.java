@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -83,6 +84,15 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public void deleteById(Long id) {
+        Persona persona = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        // Borra los roles del usuario primero (tabla usuario_rol)
+        if (persona.getUsuario() != null) {
+            persona.getUsuario().getRoles().clear();
+            usuarioRepo.save(persona.getUsuario()); // ← actualiza usuario_rol
+        }
+
         repository.deleteById(id);
     }
 
@@ -118,12 +128,19 @@ public class PersonaServiceImpl implements PersonaService {
         usuario.setActivo(true);
 
         // 3. Asignar Roles (puedes poner uno por defecto si el DTO no trae)
-        Set<Rol> roles = dto.getRoles().stream()
-                .map(nombre -> rolRepo.findByNombre(nombre)
-                        .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + nombre)))
-                .collect(Collectors.toSet());
-        usuario.setRoles(roles);
+        Set<Rol> roles;
+        if (dto.getRoles() == null || dto.getRoles().isEmpty()) {
+            Rol rolDefault = rolRepo.findByNombre("RESIDENTE")
+                    .orElseThrow(() -> new RuntimeException("Rol RESIDENTE no encontrado en BD"));
+            roles = Set.of(rolDefault);
+        } else {
+            roles = dto.getRoles().stream()
+                    .map(nombre -> rolRepo.findByNombre(nombre)
+                            .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + nombre)))
+                    .collect(Collectors.toSet());
+        }
 
+        usuario.setRoles(roles);
         usuarioRepo.save(usuario);
     }
 
@@ -170,6 +187,43 @@ public class PersonaServiceImpl implements PersonaService {
         }
 
         usuarioRepo.save(usuario);
+    }
+
+    @Override
+    @Transactional
+    public Usuario findOrCreateByGoogle(String email, String nombre, String apellidos) {
+            // Si ya existe un usuario con ese email, retórnalo directamente
+            return repository.findByEmail(email).map(Persona::getUsuario).orElseGet(() -> {
+
+                // 1. Crear Persona con lo que Google da
+                Persona persona = new Persona();
+                persona.setNombre(nombre != null ? nombre : "Sin nombre");
+                persona.setApellidos(apellidos != null ? apellidos : "Sin apellidos");
+                persona.setEmail(email);
+                persona.setEstado(true);
+                persona.setFechaRegis(LocalDate.now());
+                // Campos que Google no da → null
+                persona.setTelefono(null);
+                persona.setFechaNac(null);
+                persona.setNumeroDocumento(null);
+                persona.setTipoDocumento(null);
+
+                Persona personaGuardada = repository.save(persona);
+
+                // 2. Crear Usuario
+                Usuario usuario = new Usuario();
+                usuario.setPersona(personaGuardada);
+                usuario.setUsername(email);
+                usuario.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                usuario.setActivo(true);
+
+                // 3. Rol RESIDENTE por defecto
+                Rol rolDefault = rolRepo.findByNombre("RESIDENTE")
+                        .orElseThrow(() -> new RuntimeException("Rol RESIDENTE no encontrado"));
+                usuario.setRoles(Set.of(rolDefault));
+
+                return usuarioRepo.save(usuario);
+            });
     }
 
 

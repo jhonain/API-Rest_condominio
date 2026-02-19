@@ -2,6 +2,7 @@ package com.vasquez.Backend_PAF_condominio.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,12 +29,13 @@ public class Usuario implements UserDetails {
 
     private boolean activo;
 
+    @ToString.Exclude
     @OneToOne
     @MapsId // Vincula el ID de esta entidad con el de Persona
     @JoinColumn(name = "id")
     private Persona persona;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "usuario_rol",
             joinColumns = @JoinColumn(name = "usuario_id"),

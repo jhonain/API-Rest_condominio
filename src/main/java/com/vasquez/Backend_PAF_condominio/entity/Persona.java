@@ -3,6 +3,7 @@ package com.vasquez.Backend_PAF_condominio.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -33,5 +34,10 @@ public class Persona {
 
     @Column(name = "numeroDocumento", length = 30)
     private String numeroDocumento;
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "persona", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Usuario usuario; // ← cuando se borre Persona, se borra Usuario automáticamente
+
 
 }
