@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TipoDocumentoServiceImpl implements TipoDocumentoService {
 
@@ -50,5 +52,10 @@ public class TipoDocumentoServiceImpl implements TipoDocumentoService {
     public void deleteById(Long id) {
 
         repository.deleteById(id);
+    }
+
+    @Override
+    public List<TipoDocumento> findAll() {
+        return repository.findAll(Pageable.unpaged()).getContent();
     }
 }

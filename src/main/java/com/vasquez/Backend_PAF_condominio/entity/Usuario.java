@@ -1,5 +1,6 @@
 package com.vasquez.Backend_PAF_condominio.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -9,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,7 +21,7 @@ public class Usuario implements UserDetails {
     @Id
     private Long id; // Este ID será el mismo que el de Persona
 
-    @Column(unique = true, length = 20, nullable = false)
+    @Column(unique = true, length = 150, nullable = false)
     private String username;
 
     @Column(length = 128, nullable = false)
@@ -33,6 +33,7 @@ public class Usuario implements UserDetails {
     @OneToOne
     @MapsId // Vincula el ID de esta entidad con el de Persona
     @JoinColumn(name = "id")
+    @JsonIgnore
     private Persona persona;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

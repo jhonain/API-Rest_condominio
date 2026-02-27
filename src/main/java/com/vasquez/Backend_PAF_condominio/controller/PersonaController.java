@@ -18,7 +18,6 @@ public class PersonaController {
     private PersonaService service;
 
     @GetMapping
-
     public Page<Persona> mostrarr(@PageableDefault(size = 10, sort = "id") Pageable pageable){
         return service.findAll(pageable);
     }

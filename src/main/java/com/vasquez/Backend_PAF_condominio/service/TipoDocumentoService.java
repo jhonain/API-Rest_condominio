@@ -5,6 +5,8 @@ import com.vasquez.Backend_PAF_condominio.entity.TipoDocumento;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface TipoDocumentoService {
 
     Page<TipoDocumento> findAll(Pageable pageable);
@@ -13,4 +15,5 @@ public interface TipoDocumentoService {
     TipoDocumento create(TipoDocumento tpDoc);
     TipoDocumento update(Long id, TipoDocumento tpDoc);
     void deleteById(Long id);
+    List<TipoDocumento> findAll();
 }
