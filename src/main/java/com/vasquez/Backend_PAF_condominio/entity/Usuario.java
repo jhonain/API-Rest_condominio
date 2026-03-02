@@ -30,7 +30,7 @@ public class Usuario implements UserDetails {
     private boolean activo;
 
     @ToString.Exclude
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     @MapsId // Vincula el ID de esta entidad con el de Persona
     @JoinColumn(name = "id")
     @JsonIgnore

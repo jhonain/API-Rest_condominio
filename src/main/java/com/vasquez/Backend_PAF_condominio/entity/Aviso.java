@@ -3,6 +3,8 @@ package com.vasquez.Backend_PAF_condominio.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "avisos")
@@ -19,4 +21,10 @@ public class Aviso {
 
     private Boolean importante;
 
+    private LocalDateTime fechaCreacion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaCreacion = LocalDateTime.now();
+    }
 }

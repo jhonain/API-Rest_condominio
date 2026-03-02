@@ -9,4 +9,6 @@ public interface UnidadRepository extends JpaRepository<Unidad, Long> {
 
     // Listar unidades de un condominio
     List<Unidad> findByCondominioId(Long condominioId);
+
+
 }

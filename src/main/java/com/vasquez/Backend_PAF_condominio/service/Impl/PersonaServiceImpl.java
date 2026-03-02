@@ -213,7 +213,7 @@ public class PersonaServiceImpl implements PersonaService {
                 // 2. Crear Usuario
                 Usuario usuario = new Usuario();
                 usuario.setPersona(personaGuardada);
-                usuario.setUsername(email);
+                usuario.setUsername(nombre != null ? nombre : email);
                 usuario.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                 usuario.setActivo(true);
 
@@ -225,6 +225,5 @@ public class PersonaServiceImpl implements PersonaService {
                 return usuarioRepo.save(usuario);
             });
     }
-
 
 }

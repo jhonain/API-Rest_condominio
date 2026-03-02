@@ -20,7 +20,7 @@ public class JwtUtils {
     // ESTA CLAVE DEBE SER SECRETA Y LARGA (Mínimo 64 caracteres)
     private static final String SECRET_KEY = "J9hbvmjdcgm6cGLkU3zFhD1zRFtln31ZqIs/Cqrpusk=";
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
         Map<String, Object> claims = new HashMap<>();
 
         // Extrae el rol desde las authorities del usuario
@@ -31,6 +31,7 @@ public class JwtUtils {
                 .orElse("RESIDENTE");
 
         claims.put("rol", rol); // ← lo mete dentro del JWT
+        claims.put("userId", userId);
 
         return Jwts.builder()
                 .setClaims(claims)                                        // ← agrega claims
@@ -39,6 +40,10 @@ public class JwtUtils {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Long extractPersonaId(String token) {
+        return ((Number) extractClaim(token, claims -> claims.get("userId"))).longValue();
     }
 
     // 2. Extraer el nombre de usuario del Token

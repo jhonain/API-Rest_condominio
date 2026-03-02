@@ -1,5 +1,6 @@
 package com.vasquez.Backend_PAF_condominio.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vasquez.Backend_PAF_condominio.entity.Condominio;
 import com.vasquez.Backend_PAF_condominio.service.CondominioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/condominios")
@@ -34,26 +38,42 @@ public class CondominioController {
     }
 
     // CREAR
-    @PostMapping
-    public ResponseEntity<Condominio> crear(@RequestBody Condominio condominio) {
-        Condominio creado = condominioService.create(condominio);
-        return ResponseEntity.ok(creado);
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<Condominio> crear(
+            @RequestPart("condominio") String condominioJson,   // ← Cambiado a String
+            @RequestPart(value = "archivo", required = false) MultipartFile archivo
+    ) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Condominio condominio = mapper.readValue(condominioJson, Condominio.class); // ← Parsear manualmente
+        return ResponseEntity.ok(condominioService.create(condominio, archivo));
     }
 
+
     // ACTUALIZAR
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<Condominio> actualizar(
             @PathVariable Long id,
-            @RequestBody Condominio condominio
-    ) {
-        Condominio actualizado = condominioService.update(id, condominio);
-        return ResponseEntity.ok(actualizado);
+            @RequestPart("condominio") Condominio condominio,
+            @RequestPart(value = "archivo", required = false) MultipartFile archivo
+    ) throws IOException {
+        return ResponseEntity.ok(condominioService.update(id, condominio, archivo));
     }
+
 
     // ELIMINAR
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         condominioService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // SUBIR FOTO
+    @PostMapping("/{id}/foto")
+    public ResponseEntity<Condominio> subirFoto(
+            @PathVariable Long id,
+            @RequestParam("archivo") MultipartFile archivo
+    ) throws IOException {
+        Condominio actualizado = condominioService.subirFoto(id, archivo);
+        return ResponseEntity.ok(actualizado);
     }
 }

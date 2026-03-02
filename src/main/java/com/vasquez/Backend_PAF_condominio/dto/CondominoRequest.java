@@ -9,7 +9,7 @@ public class CondominoRequest {
     private Long personaId;
     private Long unidadId;
     private String rol;          // PROPIETARIO / INQUILINO / OTRO
-    private LocalDate fechaInicio;
+    private LocalDate fechaInicio = LocalDate.now();
     private LocalDate fechaFin;  // opcional
     private Boolean estado;
 }

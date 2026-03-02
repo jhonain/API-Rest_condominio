@@ -5,7 +5,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.vasquez.Backend_PAF_condominio.Security.JwtUtils;
+import com.vasquez.Backend_PAF_condominio.entity.Persona;
 import com.vasquez.Backend_PAF_condominio.entity.Usuario;
+import com.vasquez.Backend_PAF_condominio.repository.PersonaRepository;
+import com.vasquez.Backend_PAF_condominio.repository.UsuarioRepository;
 import com.vasquez.Backend_PAF_condominio.service.LoginService;
 import com.vasquez.Backend_PAF_condominio.service.PersonaService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class LoginServiceImpl implements LoginService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtService;
     private final PersonaService service;
+    private final UsuarioRepository usuarioRepository;
 
     @Value("${google.client-id}")
     private String googleClientId;
@@ -35,7 +39,11 @@ public class LoginServiceImpl implements LoginService {
                 new UsernamePasswordAuthenticationToken(username, password)
         );
         UserDetails user = (UserDetails) auth.getPrincipal();
-        return jwtService.generateToken(user);
+
+        Usuario userI = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        return jwtService.generateToken(user, userI.getId());
     }
 
     //logica para la implementacion de gloogle
@@ -59,7 +67,10 @@ public class LoginServiceImpl implements LoginService {
         // Usa PersonaService en vez de UsuarioService
         Usuario usuario = service.findOrCreateByGoogle(email, nombre, apellidos);
 
-        return jwtService.generateToken(usuario);
+        Usuario userI = usuarioRepository.findByUsername(usuario.getUsername())
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        return jwtService.generateToken(usuario, userI.getId());
     }
 
 }
